@@ -31,6 +31,8 @@ float baseFee[NUM_SPECIALTIES] = {1500.00, 2500.00, 4500.00, 5000.00};
 int consultTime[NUM_SPECIALTIES] = {15, 20, 30, 30};
 int dailyCap[NUM_SPECIALTIES] = {30, 20, 12, 10};
 
+void registerPatient();
+
 int main() {
     int choice;
 
@@ -49,7 +51,7 @@ int main() {
 
         switch (choice) {
             case 1:
-                printf("Register Patient - coming soon\n");
+                registerPatient();
                 break;
             case 2:
                 printf("Bed Occupancy - coming soon\n");
@@ -68,4 +70,24 @@ int main() {
         }
     }
     return 0;
+}
+void registerPatient() {
+    if (patientCount >= MAX_PATIENTS) {
+        printf("System full. Cannot register more patients.\n");
+        return;
+    }
+
+    int i = patientCount;
+
+    printf("\nEnter Patient Name: ");
+    scanf(" %[^\n]", patientName[i]);
+
+    printf("Enter Patient Age: ");
+    scanf("%d", &patientAge[i]);
+
+    printf("Enter Triage Level (1=Normal, 2=Urgent, 3=Critical): ");
+    scanf("%d", &triageLevel[i]);
+
+    printf("Patient registered successfully!\n");
+    patientCount++;
 }
