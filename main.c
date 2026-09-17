@@ -169,5 +169,47 @@ void registerPatient() {
     }
 
     printf("Patient registered successfully!\n");
+
+
+    float waitTime = calculateWaitTime(patientSpecialty[i]);
+    float surcharge = calculateSurcharge(patientSpecialty[i], triageLevel[i]);
+    float wardCost = calculateWardCost(patientWard[i], daysAdmitted[i], isAdmitted[i]);
+    float grossTotal = baseFee[patientSpecialty[i]] + surcharge + wardCost;
+    float discount = calculateDiscount(patientAge[i], grossTotal);
+    float finalAmount = grossTotal - discount;
+
+    finalBill[i] = finalAmount;
+
+    queueCount[patientSpecialty[i]]++;
+
+
+    printf("\n====================================================\n");
+    printf(" SMART HOSPITAL ADMISSION & BILL\n");
+    printf("----------------------------------------------------------------------------------------\n");
+    printf("Patient ID      : PAT-%d\n", 1000 + i + 1);
+    printf("Patient Name    : %s\n", patientName[i]);
+    printf("Age             : %d Years", patientAge[i]);
+    if (patientAge[i] < 5 || patientAge[i] > 65)
+        printf(" (15%% Subsidy Eligible)\n");
+    else
+        printf("\n");
+    printf("Specialty       : %s\n", specialtyName[patientSpecialty[i]]);
+    if (isAdmitted[i] == 1)
+        printf("Assigned Ward   : %s (Bed #%02d)\n", wardName[patientWard[i]], assignedBedNo[i] + 1);
+    else
+        printf("Assigned Ward   : Not Admitted (Outpatient)\n");
+    printf("Urgency Level   : Level %d\n", triageLevel[i]);
+    printf("----------------------------------------------------------------------------------------\n");
+    printf("Base Consultation Fee   : LKR %.2f\n", baseFee[patientSpecialty[i]]);
+    printf("Emergency Surcharge     : LKR %.2f\n", surcharge);
+    printf("Ward Stay Cost (%d Days) : LKR %.2f\n", daysAdmitted[i], wardCost);
+    printf("----------------------------------------------------------------------------------------\n");
+    printf("Gross Total Bill        : LKR %.2f\n", grossTotal);
+    printf("Age Subsidy Discount    : LKR -%.2f\n", discount);
+    printf("----------------------------------------------------------------------------------------\n");
+    printf("Final Payable Amount    : LKR %.2f\n", finalAmount);
+    printf("Estimated Waiting Time  : %.2f mins\n", waitTime);
+    printf("====================================================\n");
+
     patientCount++;
 }
