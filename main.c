@@ -36,8 +36,10 @@ float calculateWaitTime(int specIdx);
 float calculateSurcharge(int specIdx, int urgency);
 float calculateWardCost(int wardIdx, int days, int admitted);
 float calculateDiscount(int age, float grossTotal);
-
 void showPriorityQueue();
+void displayBeds();
+int getValidInt(const char *prompt, int min, int max);
+void getValidName(const char *prompt, char *dest, int destSize);
 
 int main() {
     int choice;
@@ -52,15 +54,15 @@ int main() {
         printf("4. Generate Reports\n");
         printf("5. Exit\n");
         printf("====================================\n");
-        printf("Enter your choice: ");
-        scanf("%d", &choice);
+
+        choice = getValidInt("Enter your choice: ", 1, 5);
 
         switch (choice) {
             case 1:
                 registerPatient();
                 break;
             case 2:
-                printf("Bed Occupancy - coming soon\n");
+                displayBeds();
                 break;
             case 3:
                 showPriorityQueue();
@@ -71,11 +73,53 @@ int main() {
             case 5:
                 printf("Exiting system. Goodbye!\n");
                 return 0;
-            default:
-                printf("Invalid choice. Try again.\n");
         }
     }
     return 0;
+}
+
+
+int getValidInt(const char *prompt, int min, int max) {
+    int value;
+    int result;
+    int c;
+
+    while (1) {
+        printf("%s", prompt);
+        result = scanf("%d", &value);
+
+        if (result != 1) {
+
+            while ((c = getchar()) != '\n' && c != EOF);
+            printf("Invalid input. Please enter a whole number.\n");
+            continue;
+        }
+
+
+        while ((c = getchar()) != '\n' && c != EOF);
+
+        if (value < min || value > max) {
+            printf("Invalid input. Please enter a number between %d and %d.\n", min, max);
+            continue;
+        }
+
+        return value;
+    }
+}
+
+
+void getValidName(const char *prompt, char *dest, int destSize) {
+    while (1) {
+        printf("%s", prompt);
+        if (scanf(" %49[^\n]", dest) != 1) {
+            int c;
+            while ((c = getchar()) != '\n' && c != EOF);
+            printf("Invalid input. Name cannot be empty.\n");
+            continue;
+        }
+        (void)destSize;
+        break;
+    }
 }
 
 float calculateWaitTime(int specIdx) {
@@ -106,27 +150,20 @@ void registerPatient() {
 
     int i = patientCount;
 
-    printf("\nEnter Patient Name: ");
-    scanf(" %[^\n]", patientName[i]);
+    getValidName("\nEnter Patient Name: ", patientName[i], 50);
 
-    printf("Enter Patient Age: ");
-    scanf("%d", &patientAge[i]);
+    patientAge[i] = getValidInt("Enter Patient Age: ", 0, 120);
 
-    printf("Enter Triage Level (1=Normal, 2=Urgent, 3=Critical): ");
-    scanf("%d", &triageLevel[i]);
+    triageLevel[i] = getValidInt("Enter Triage Level (1=Normal, 2=Urgent, 3=Critical): ", 1, 3);
 
     printf("\nAvailable Specialties:\n");
     for (int j = 0; j < NUM_SPECIALTIES; j++) {
         printf("%d. %s\n", specialtyID[j], specialtyName[j]);
     }
-    printf("Select Specialty ID (1-4): ");
-    int specID;
-    scanf("%d", &specID);
+    int specID = getValidInt("Select Specialty ID (1-4): ", 1, NUM_SPECIALTIES);
     patientSpecialty[i] = specID - 1;
 
-    int admitChoice;
-    printf("Is patient admitted to a ward? (1=Yes, 0=No): ");
-    scanf("%d", &admitChoice);
+    int admitChoice = getValidInt("Is patient admitted to a ward? (1=Yes, 0=No): ", 0, 1);
 
     if (admitChoice == 1) {
         isAdmitted[i] = 1;
@@ -135,14 +172,11 @@ void registerPatient() {
         for (int j = 0; j < NUM_WARDS; j++) {
             printf("%d. %s\n", wardID[j], wardName[j]);
         }
-        printf("Select Ward ID (1-4): ");
-        int wID;
-        scanf("%d", &wID);
+        int wID = getValidInt("Select Ward ID (1-4): ", 1, NUM_WARDS);
         int wardIndex = wID - 1;
         patientWard[i] = wardIndex;
 
-        printf("Enter Days Admitted: ");
-        scanf("%d", &daysAdmitted[i]);
+        daysAdmitted[i] = getValidInt("Enter Days Admitted: ", 1, 365);
 
         int bedFound = -1;
         for (int b = 0; b < wardCapacity[wardIndex]; b++) {
@@ -172,7 +206,6 @@ void registerPatient() {
 
     printf("Patient registered successfully!\n");
 
-
     float waitTime = calculateWaitTime(patientSpecialty[i]);
     float surcharge = calculateSurcharge(patientSpecialty[i], triageLevel[i]);
     float wardCost = calculateWardCost(patientWard[i], daysAdmitted[i], isAdmitted[i]);
@@ -181,26 +214,24 @@ void registerPatient() {
     float finalAmount = grossTotal - discount;
 
     finalBill[i] = finalAmount;
-
     queueCount[patientSpecialty[i]]++;
-
 
     printf("\n====================================================\n");
     printf(" SMART HOSPITAL ADMISSION & BILL\n");
     printf("----------------------------------------------------------------------------------------\n");
-    printf("Patient ID      : PAT-%d\n", 1000 + i + 1);
-    printf("Patient Name    : %s\n", patientName[i]);
-    printf("Age             : %d Years", patientAge[i]);
+    printf("Patient ID              : PAT-%d\n", 1000 + i + 1);
+    printf("Patient Name            : %s\n", patientName[i]);
+    printf("Age                     : %d Years", patientAge[i]);
     if (patientAge[i] < 5 || patientAge[i] > 65)
         printf(" (15%% Subsidy Eligible)\n");
     else
         printf("\n");
-    printf("Specialty       : %s\n", specialtyName[patientSpecialty[i]]);
+    printf("Specialty               : %s\n", specialtyName[patientSpecialty[i]]);
     if (isAdmitted[i] == 1)
-        printf("Assigned Ward   : %s (Bed #%02d)\n", wardName[patientWard[i]], assignedBedNo[i] + 1);
+        printf("Assigned Ward           : %s (Bed #%02d)\n", wardName[patientWard[i]], assignedBedNo[i] + 1);
     else
-        printf("Assigned Ward   : Not Admitted (Outpatient)\n");
-    printf("Urgency Level   : Level %d\n", triageLevel[i]);
+        printf("Assigned Ward           : Not Admitted (Outpatient)\n");
+    printf("Urgency Level           : Level %d\n", triageLevel[i]);
     printf("----------------------------------------------------------------------------------------\n");
     printf("Base Consultation Fee   : LKR %.2f\n", baseFee[patientSpecialty[i]]);
     printf("Emergency Surcharge     : LKR %.2f\n", surcharge);
@@ -227,7 +258,7 @@ void showPriorityQueue() {
         indexArr[i] = i;
     }
 
-    // Bubble Sort - descending by triageLevel (3=Critical first)
+
     for (int a = 0; a < patientCount - 1; a++) {
         for (int b = 0; b < patientCount - 1 - a; b++) {
             if (triageLevel[indexArr[b]] < triageLevel[indexArr[b + 1]]) {
@@ -252,4 +283,25 @@ void showPriorityQueue() {
                1000 + idx + 1, patientName[idx], patientAge[idx], triageLevel[idx], urgencyText);
     }
     printf("==========================================================\n");
+}
+
+void displayBeds() {
+    printf("\n==================== BED OCCUPANCY ====================\n");
+    for (int w = 0; w < NUM_WARDS; w++) {
+        int occupiedCount = 0;
+
+        printf("\n%s (Capacity: %d beds)\n", wardName[w], wardCapacity[w]);
+        printf("Beds: ");
+        for (int b = 0; b < wardCapacity[w]; b++) {
+            printf("%d ", bedOccupancy[w][b]);
+            if (bedOccupancy[w][b] == 1) {
+                occupiedCount++;
+            }
+        }
+        printf("\n");
+
+        float occupancyPercent = ((float)occupiedCount / wardCapacity[w]) * 100;
+        printf("Occupied: %d / %d beds (%.1f%%)\n", occupiedCount, wardCapacity[w], occupancyPercent);
+    }
+    printf("=========================================================\n");
 }
