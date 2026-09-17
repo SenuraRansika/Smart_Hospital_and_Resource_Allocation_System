@@ -71,6 +71,7 @@ int main() {
     }
     return 0;
 }
+
 void registerPatient() {
     if (patientCount >= MAX_PATIENTS) {
         printf("System full. Cannot register more patients.\n");
@@ -87,6 +88,15 @@ void registerPatient() {
 
     printf("Enter Triage Level (1=Normal, 2=Urgent, 3=Critical): ");
     scanf("%d", &triageLevel[i]);
+
+    printf("\nAvailable Specialties:\n");
+    for (int j = 0; j < NUM_SPECIALTIES; j++) {
+        printf("%d. %s\n", specialtyID[j], specialtyName[j]);
+    }
+    printf("Select Specialty ID (1-4): ");
+    int specID;
+    scanf("%d", &specID);
+    patientSpecialty[i] = specID - 1;   // array index = 0 to 3
 
     printf("Patient registered successfully!\n");
     patientCount++;
