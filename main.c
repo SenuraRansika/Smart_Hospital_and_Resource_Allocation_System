@@ -38,6 +38,7 @@ float calculateWardCost(int wardIdx, int days, int admitted);
 float calculateDiscount(int age, float grossTotal);
 void showPriorityQueue();
 void displayBeds();
+void generateReports();
 int getValidInt(const char *prompt, int min, int max);
 void getValidName(const char *prompt, char *dest, int destSize);
 
@@ -68,7 +69,7 @@ int main() {
                 showPriorityQueue();
                 break;
             case 4:
-                printf("Reports - coming soon\n");
+                generateReports();
                 break;
             case 5:
                 printf("Exiting system. Goodbye!\n");
@@ -304,4 +305,59 @@ void displayBeds() {
         printf("Occupied: %d / %d beds (%.1f%%)\n", occupiedCount, wardCapacity[w], occupancyPercent);
     }
     printf("=========================================================\n");
+}
+void generateReports() {
+    if (patientCount == 0) {
+        printf("\nNo patients registered yet.\n");
+        return;
+    }
+
+    int normalCount = 0, urgentCount = 0, criticalCount = 0;
+    float totalRevenue = 0, totalDiscount = 0;
+    float highestBill = -1;
+    int highestBillIndex = -1;
+
+    for (int i = 0; i < patientCount; i++) {
+        // Urgency level counting
+        if (triageLevel[i] == 1) normalCount++;
+        else if (triageLevel[i] == 2) urgentCount++;
+        else if (triageLevel[i] == 3) criticalCount++;
+
+        // Revenue and discount totals
+        totalRevenue += finalBill[i];
+
+        float surcharge = calculateSurcharge(patientSpecialty[i], triageLevel[i]);
+        float wardCost = calculateWardCost(patientWard[i], daysAdmitted[i], isAdmitted[i]);
+        float gross = baseFee[patientSpecialty[i]] + surcharge + wardCost;
+        float discount = gross - finalBill[i];
+        totalDiscount += discount;
+
+        // Highest paying patient
+        if (finalBill[i] > highestBill) {
+            highestBill = finalBill[i];
+            highestBillIndex = i;
+        }
+    }
+
+    printf("\n==================== SUMMARY REPORT ====================\n");
+    printf("Total Patients Registered : %d\n", patientCount);
+    printf("  - Normal (Level 1)   : %d\n", normalCount);
+    printf("  - Urgent (Level 2)   : %d\n", urgentCount);
+    printf("  - Critical (Level 3) : %d\n", criticalCount);
+    printf("----------------------------------------------------------\n");
+    printf("Total Revenue Earned   : LKR %.2f\n", totalRevenue);
+    printf("Total Discounts Given  : LKR %.2f\n", totalDiscount);
+    printf("----------------------------------------------------------\n");
+    printf("Ward Occupancy:\n");
+    for (int w = 0; w < NUM_WARDS; w++) {
+        int occupiedCount = 0;
+        for (int b = 0; b < wardCapacity[w]; b++) {
+            if (bedOccupancy[w][b] == 1) occupiedCount++;
+        }
+        float percent = ((float)occupiedCount / wardCapacity[w]) * 100;
+        printf("  - %-20s : %.1f%%\n", wardName[w], percent);
+    }
+    printf("----------------------------------------------------------\n");
+    printf("Highest Paying Patient : %s (LKR %.2f)\n", patientName[highestBillIndex], highestBill);
+    printf("==========================================================\n");
 }
