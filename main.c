@@ -5,6 +5,19 @@
 #define MAX_BEDS_PER_WARD 20
 #define MAX_PATIENTS 100
 
+int specialtyID[NUM_SPECIALTIES] = {1, 2, 3, 4};
+char specialtyName[NUM_SPECIALTIES][30] = {"General Practice (OPD)", "Paediatrics", "Cardiology", "Neurology"};
+float baseFee[NUM_SPECIALTIES] = {1500.00, 2500.00, 4500.00, 5000.00};
+int consultTime[NUM_SPECIALTIES] = {15, 20, 30, 30};
+int dailyCap[NUM_SPECIALTIES] = {30, 20, 12, 10};
+
+int wardID[NUM_WARDS] = {1, 2, 3, 4};
+char wardName[NUM_WARDS][30] = {"General Ward", "Paediatric Ward", "Surgical Ward", "ICU"};
+float wardDailyRate[NUM_WARDS] = {3000.00, 6000.00, 12000.00, 25000.00};
+int wardCapacity[NUM_WARDS] = {20, 10, 10, 5};
+
+int bedOccupancy[NUM_WARDS][MAX_BEDS_PER_WARD] = {0};
+
 int patientCount = 0;
 char patientName[MAX_PATIENTS][50];
 int patientAge[MAX_PATIENTS];
@@ -17,19 +30,6 @@ int assignedBedNo[MAX_PATIENTS];
 float finalBill[MAX_PATIENTS];
 
 int queueCount[NUM_SPECIALTIES] = {0, 0, 0, 0};
-
-int wardID[NUM_WARDS] = {1, 2, 3, 4};
-char wardName[NUM_WARDS][30] = {"General Ward", "Paediatric Ward", "Surgical Ward", "ICU"};
-float wardDailyRate[NUM_WARDS] = {3000.00, 6000.00, 12000.00, 25000.00};
-int wardCapacity[NUM_WARDS] = {20, 10, 10, 5};
-
-int bedOccupancy[NUM_WARDS][MAX_BEDS_PER_WARD] = {0};
-
-int specialtyID[NUM_SPECIALTIES] = {1, 2, 3, 4};
-char specialtyName[NUM_SPECIALTIES][30] = {"General Practice (OPD)", "Paediatrics", "Cardiology", "Neurology"};
-float baseFee[NUM_SPECIALTIES] = {1500.00, 2500.00, 4500.00, 5000.00};
-int consultTime[NUM_SPECIALTIES] = {15, 20, 30, 30};
-int dailyCap[NUM_SPECIALTIES] = {30, 20, 12, 10};
 
 void registerPatient();
 
@@ -96,7 +96,53 @@ void registerPatient() {
     printf("Select Specialty ID (1-4): ");
     int specID;
     scanf("%d", &specID);
-    patientSpecialty[i] = specID - 1;   // array index = 0 to 3
+    patientSpecialty[i] = specID - 1;
+
+    int admitChoice;
+    printf("Is patient admitted to a ward? (1=Yes, 0=No): ");
+    scanf("%d", &admitChoice);
+
+    if (admitChoice == 1) {
+        isAdmitted[i] = 1;
+
+        printf("\nAvailable Wards:\n");
+        for (int j = 0; j < NUM_WARDS; j++) {
+            printf("%d. %s\n", wardID[j], wardName[j]);
+        }
+        printf("Select Ward ID (1-4): ");
+        int wID;
+        scanf("%d", &wID);
+        int wardIndex = wID - 1;
+        patientWard[i] = wardIndex;
+
+        printf("Enter Days Admitted: ");
+        scanf("%d", &daysAdmitted[i]);
+
+        int bedFound = -1;
+        for (int b = 0; b < wardCapacity[wardIndex]; b++) {
+            if (bedOccupancy[wardIndex][b] == 0) {
+                bedFound = b;
+                break;
+            }
+        }
+
+        if (bedFound == -1) {
+            printf("No beds available in %s! Patient cannot be admitted.\n", wardName[wardIndex]);
+            isAdmitted[i] = 0;
+            daysAdmitted[i] = 0;
+            assignedBedNo[i] = -1;
+        } else {
+            bedOccupancy[wardIndex][bedFound] = 1;
+            assignedBedNo[i] = bedFound;
+            printf("Bed #%02d assigned in %s.\n", bedFound + 1, wardName[wardIndex]);
+        }
+
+    } else {
+        isAdmitted[i] = 0;
+        daysAdmitted[i] = 0;
+        assignedBedNo[i] = -1;
+        patientWard[i] = -1;
+    }
 
     printf("Patient registered successfully!\n");
     patientCount++;
