@@ -3,6 +3,20 @@
 #define NUM_SPECIALTIES 4
 #define NUM_WARDS 4
 #define MAX_BEDS_PER_WARD 20
+#define MAX_PATIENTS 100
+
+int patientCount = 0;
+char patientName[MAX_PATIENTS][50];
+int patientAge[MAX_PATIENTS];
+int triageLevel[MAX_PATIENTS];
+int patientSpecialty[MAX_PATIENTS];
+int isAdmitted[MAX_PATIENTS];
+int patientWard[MAX_PATIENTS];
+int daysAdmitted[MAX_PATIENTS];
+int assignedBedNo[MAX_PATIENTS];
+float finalBill[MAX_PATIENTS];
+
+int queueCount[NUM_SPECIALTIES] = {0, 0, 0, 0};
 
 int wardID[NUM_WARDS] = {1, 2, 3, 4};
 char wardName[NUM_WARDS][30] = {"General Ward", "Paediatric Ward", "Surgical Ward", "ICU"};
