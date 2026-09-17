@@ -39,10 +39,15 @@ float calculateDiscount(int age, float grossTotal);
 void showPriorityQueue();
 void displayBeds();
 void generateReports();
+void saveBedsToFile();
+void loadBedsFromFile();
+void appendPatientRecord(int i);
 int getValidInt(const char *prompt, int min, int max);
 void getValidName(const char *prompt, char *dest, int destSize);
 
 int main() {
+    loadBedsFromFile();
+
     int choice;
 
     while (1) {
@@ -72,6 +77,7 @@ int main() {
                 generateReports();
                 break;
             case 5:
+                saveBedsToFile();
                 printf("Exiting system. Goodbye!\n");
                 return 0;
         }
@@ -244,6 +250,7 @@ void registerPatient() {
     printf("Final Payable Amount    : LKR %.2f\n", finalAmount);
     printf("Estimated Waiting Time  : %.2f mins\n", waitTime);
     printf("====================================================\n");
+    appendPatientRecord(i);
 
     patientCount++;
 }
@@ -360,4 +367,42 @@ void generateReports() {
     printf("----------------------------------------------------------\n");
     printf("Highest Paying Patient : %s (LKR %.2f)\n", patientName[highestBillIndex], highestBill);
     printf("==========================================================\n");
+}
+void saveBedsToFile() {
+    FILE *fp = fopen("beds_status.txt", "w");
+    if (fp == NULL) {
+        printf("Error: Could not save bed status.\n");
+        return;
+    }
+    for (int w = 0; w < NUM_WARDS; w++) {
+        for (int b = 0; b < MAX_BEDS_PER_WARD; b++) {
+            fprintf(fp, "%d ", bedOccupancy[w][b]);
+        }
+        fprintf(fp, "\n");
+    }
+    fclose(fp);
+}
+
+void loadBedsFromFile() {
+    FILE *fp = fopen("beds_status.txt", "r");
+    if (fp == NULL) {
+        return;
+    }
+    for (int w = 0; w < NUM_WARDS; w++) {
+        for (int b = 0; b < MAX_BEDS_PER_WARD; b++) {
+            fscanf(fp, "%d", &bedOccupancy[w][b]);
+        }
+    }
+    fclose(fp);
+}
+
+void appendPatientRecord(int i) {
+    FILE *fp = fopen("patient_records.txt", "a");
+    if (fp == NULL) {
+        printf("Error: Could not save patient record.\n");
+        return;
+    }
+    fprintf(fp, "PAT-%d,%s,%d,Level-%d,LKR %.2f\n",
+            1000 + i + 1, patientName[i], patientAge[i], triageLevel[i], finalBill[i]);
+    fclose(fp);
 }
