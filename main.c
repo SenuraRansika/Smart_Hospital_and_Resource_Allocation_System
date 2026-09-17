@@ -32,6 +32,10 @@ float finalBill[MAX_PATIENTS];
 int queueCount[NUM_SPECIALTIES] = {0, 0, 0, 0};
 
 void registerPatient();
+float calculateWaitTime(int specIdx);
+float calculateSurcharge(int specIdx, int urgency);
+float calculateWardCost(int wardIdx, int days, int admitted);
+float calculateDiscount(int age, float grossTotal);
 
 int main() {
     int choice;
@@ -69,6 +73,26 @@ int main() {
                 printf("Invalid choice. Try again.\n");
         }
     }
+    return 0;
+}
+
+float calculateWaitTime(int specIdx) {
+    return queueCount[specIdx] * consultTime[specIdx];
+}
+
+float calculateSurcharge(int specIdx, int urgency) {
+    if (urgency == 1) return 0;
+    else if (urgency == 2) return baseFee[specIdx] * 0.20;
+    else return baseFee[specIdx] * 0.50;
+}
+
+float calculateWardCost(int wardIdx, int days, int admitted) {
+    if (admitted == 0) return 0;
+    return days * wardDailyRate[wardIdx];
+}
+
+float calculateDiscount(int age, float grossTotal) {
+    if (age < 5 || age > 65) return grossTotal * 0.15;
     return 0;
 }
 
