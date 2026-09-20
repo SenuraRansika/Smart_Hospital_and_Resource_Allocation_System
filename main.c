@@ -5,16 +5,16 @@
 #define MAX_BEDS_PER_WARD 20
 #define MAX_PATIENTS 100
 
-int specialtyID[NUM_SPECIALTIES] = {1, 2, 3, 4};
-char specialtyName[NUM_SPECIALTIES][30] = {"General Practice (OPD)", "Paediatrics", "Cardiology", "Neurology"};
-float baseFee[NUM_SPECIALTIES] = {1500.00, 2500.00, 4500.00, 5000.00};
-int consultTime[NUM_SPECIALTIES] = {15, 20, 30, 30};
-int dailyCap[NUM_SPECIALTIES] = {30, 20, 12, 10};
+const int specialtyID[NUM_SPECIALTIES] = {1, 2, 3, 4};
+const char specialtyName[NUM_SPECIALTIES][30] = {"General Practice (OPD)", "Paediatrics", "Cardiology", "Neurology"};
+const float baseFee[NUM_SPECIALTIES] = {1500.00, 2500.00, 4500.00, 5000.00};
+const int consultTime[NUM_SPECIALTIES] = {15, 20, 30, 30};
+const int dailyCap[NUM_SPECIALTIES] = {30, 20, 12, 10};
 
-int wardID[NUM_WARDS] = {1, 2, 3, 4};
-char wardName[NUM_WARDS][30] = {"General Ward", "Paediatric Ward", "Surgical Ward", "ICU"};
-float wardDailyRate[NUM_WARDS] = {3000.00, 6000.00, 12000.00, 25000.00};
-int wardCapacity[NUM_WARDS] = {20, 10, 10, 5};
+const int wardID[NUM_WARDS] = {1, 2, 3, 4};
+const char wardName[NUM_WARDS][30] = {"General Ward", "Paediatric Ward", "Surgical Ward", "ICU"};
+const float wardDailyRate[NUM_WARDS] = {3000.00, 6000.00, 12000.00, 25000.00};
+const int wardCapacity[NUM_WARDS] = {20, 10, 10, 5};
 
 int bedOccupancy[NUM_WARDS][MAX_BEDS_PER_WARD] = {0};
 
@@ -127,14 +127,16 @@ void getValidName(const char *prompt, char *dest, int destSize)
     while (1)
     {
         printf("%s", prompt);
+
         if (scanf(" %49[^\n]", dest) != 1)
         {
             int c;
             while ((c = getchar()) != '\n' && c != EOF);
+
             printf("Invalid input. Name cannot be empty.\n");
             continue;
         }
-        (void)destSize;
+
         break;
     }
 }
@@ -184,8 +186,31 @@ void registerPatient()
     {
         printf("%d. %s\n", specialtyID[j], specialtyName[j]);
     }
-    int specID = getValidInt("Select Specialty ID (1-4): ", 1, NUM_SPECIALTIES);
-    patientSpecialty[i] = specID - 1;
+    int specID;
+
+while (1)
+{
+    specID = getValidInt(
+        "Select Specialty ID (1-4): ",
+        1,
+        NUM_SPECIALTIES
+    );
+
+    int specIndex = specID - 1;
+
+    if (queueCount[specIndex] >= dailyCap[specIndex])
+    {
+        printf("Daily capacity reached for %s.\n",
+               specialtyName[specIndex]);
+
+        printf("Please select another specialty.\n");
+    }
+    else
+    {
+        patientSpecialty[i] = specIndex;
+        break;
+    }
+}
 
     int admitChoice = getValidInt("Is patient admitted to a ward? (1=Yes, 0=No): ", 0, 1);
 
