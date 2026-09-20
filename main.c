@@ -215,6 +215,11 @@ void registerPatient() {
 
     float waitTime = calculateWaitTime(patientSpecialty[i]);
     float surcharge = calculateSurcharge(patientSpecialty[i], triageLevel[i]);
+        char *urgencyName;
+        int surchargePercent;
+        if (triageLevel[i] == 1) { urgencyName = "Normal"; surchargePercent = 0; }
+        else if (triageLevel[i] == 2) { urgencyName = "Urgent"; surchargePercent = 20; }
+        else { urgencyName = "Critical"; surchargePercent = 50; }
     float wardCost = calculateWardCost(patientWard[i], daysAdmitted[i], isAdmitted[i]);
     float grossTotal = baseFee[patientSpecialty[i]] + surcharge + wardCost;
     float discount = calculateDiscount(patientAge[i], grossTotal);
@@ -238,17 +243,23 @@ void registerPatient() {
         printf("Assigned Ward           : %s (Bed #%02d)\n", wardName[patientWard[i]], assignedBedNo[i] + 1);
     else
         printf("Assigned Ward           : Not Admitted (Outpatient)\n");
-    printf("Urgency Level           : Level %d\n", triageLevel[i]);
-    printf("----------------------------------------------------------------------------------------\n");
-    printf("Base Consultation Fee   : LKR %.2f\n", baseFee[patientSpecialty[i]]);
-    printf("Emergency Surcharge     : LKR %.2f\n", surcharge);
-    printf("Ward Stay Cost (%d Days) : LKR %.2f\n", daysAdmitted[i], wardCost);
-    printf("----------------------------------------------------------------------------------------\n");
-    printf("Gross Total Bill        : LKR %.2f\n", grossTotal);
-    printf("Age Subsidy Discount    : LKR -%.2f\n", discount);
+        printf("Urgency Level           : Level %d (%s)\n", triageLevel[i], urgencyName);
+        printf("----------------------------------------------------------------------------------------\n");
+        printf("Base Consultation Fee   : LKR %.2f\n", baseFee[patientSpecialty[i]]);
+        printf("Emergency Surcharge     : LKR %.2f (%d%%)\n", surcharge, surchargePercent);
+        printf("Ward Stay Cost (%d Days) : LKR %.2f\n", daysAdmitted[i], wardCost);
+        printf("----------------------------------------------------------------------------------------\n");
+        printf("Gross Total Bill        : LKR %.2f\n", grossTotal);
+    if (patientAge[i] < 5 || patientAge[i] > 65)
+        printf("Age Subsidy Discount    : LKR -%.2f (15%%)\n", discount);
+    else
+        printf("Age Subsidy Discount    : LKR -%.2f\n", discount);
     printf("----------------------------------------------------------------------------------------\n");
     printf("Final Payable Amount    : LKR %.2f\n", finalAmount);
-    printf("Estimated Waiting Time  : %.2f mins\n", waitTime);
+    if (triageLevel[i] == 3)
+        printf("Estimated Waiting Time  : %.2f mins (Immediate Attention)\n", waitTime);
+    else
+        printf("Estimated Waiting Time  : %.2f mins\n", waitTime);
     printf("====================================================\n");
     appendPatientRecord(i);
 
@@ -325,12 +336,12 @@ void generateReports() {
     int highestBillIndex = -1;
 
     for (int i = 0; i < patientCount; i++) {
-        // Urgency level counting
+
         if (triageLevel[i] == 1) normalCount++;
         else if (triageLevel[i] == 2) urgentCount++;
         else if (triageLevel[i] == 3) criticalCount++;
 
-        // Revenue and discount totals
+
         totalRevenue += finalBill[i];
 
         float surcharge = calculateSurcharge(patientSpecialty[i], triageLevel[i]);
@@ -339,7 +350,7 @@ void generateReports() {
         float discount = gross - finalBill[i];
         totalDiscount += discount;
 
-        // Highest paying patient
+
         if (finalBill[i] > highestBill) {
             highestBill = finalBill[i];
             highestBillIndex = i;
